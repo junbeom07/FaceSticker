@@ -4,7 +4,7 @@ import numpy as np
 import dlib
 
 # 이미지 불러오기
-image_path = "new.jpg"
+image_path = "img.jpg"
 img_bgr = cv2.imread(image_path)
 img_show = img_bgr.copy()			
 img_rgb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
