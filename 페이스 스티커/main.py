@@ -28,7 +28,7 @@ for dlib_rect in dlib_rects:
     list_landmarks.append(list_points)
 
 # 스티커 이미지 불러오기
-sticker_path = 'king.png'
+sticker_path = 'kkkk.png'
 img_king = cv2.imread(sticker_path)
 
 # 얼굴마다 스티커 합성
@@ -68,4 +68,5 @@ for dlib_rect, landmark in zip(dlib_rects, list_landmarks):
 # 결과 이미지 출력
 img_show_rgb = cv2.cvtColor(img_show, cv2.COLOR_BGR2RGB)
 plt.imshow(img_show_rgb)
+plt.axis('off')
 plt.show()
