@@ -28,7 +28,7 @@ for dlib_rect in dlib_rects:
     list_landmarks.append(list_points)
 
 # 스티커 이미지 불러오기
-sticker_path = 'aaaa.png'
+sticker_path = 'kkkk.png'
 img_king = cv2.imread(sticker_path)
 
 # 얼굴마다 스티커 합성

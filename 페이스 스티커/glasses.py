@@ -4,7 +4,7 @@ import numpy as np
 import dlib
 
 # 이미지 불러오기
-image_path = "new.jpg"
+image_path = "img.jpg"
 img_bgr = cv2.imread(image_path)
 img_show = img_bgr.copy()			
 img_rgb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
@@ -33,17 +33,26 @@ img_king = cv2.imread(sticker_path)
 
 # 얼굴마다 스티커 합성
 for dlib_rect, landmark in zip(dlib_rects, list_landmarks):
-    # 코 위치 (30번 랜드마크) 기준으로 스티커 위치 계산
-    x = landmark[30][0]
-    y = landmark[30][1] - dlib_rect.height() // 2
-    w = h = dlib_rect.width()
+    # 눈 위치 (36번 랜드마크: 왼쪽 눈의 왼쪽 끝, 45번 랜드마크: 오른쪽 눈의 오른쪽 끝)
+    left_eye_x = landmark[36][0]
+    left_eye_y = landmark[36][1]
+    right_eye_x = landmark[45][0]
+    right_eye_y = landmark[45][1]
+    
+    # 눈의 중심을 계산하여 스티커 위치 결정
+    eye_center_x = (left_eye_x + right_eye_x) // 2
+    eye_center_y = (left_eye_y + right_eye_y) // 2
+    
+    # 스티커의 크기 설정 (가로 크기를 늘림)
+    w = int((right_eye_x - left_eye_x) * 1.5)  # 가로 크기 1.5배
+    h = right_eye_x - left_eye_x
     
     # 스티커 이미지 리사이즈
     img_king_resized = cv2.resize(img_king, (w, h))
     
     # 스티커 위치 보정
-    refined_x = x - w // 2
-    refined_y = y - h
+    refined_x = eye_center_x - w // 2
+    refined_y = eye_center_y - h // 2
     
     if refined_x < 0:
         img_king_resized = img_king_resized[:, -refined_x:]
