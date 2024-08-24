@@ -21,6 +21,9 @@ Ctrl+Shift+P
 Python: Select Interpreter
 
 3.12 아래 버전 사용해야 dlib설치가능
+
+https://pixlr.com/kr/editor/
+png 파일로 변경
 _________________________________________________
 
 box.py
