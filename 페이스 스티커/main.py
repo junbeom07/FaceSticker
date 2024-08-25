@@ -1,6 +1,8 @@
 import cv2
 import numpy as np
 import dlib
+import os
+import datetime
 
 # 얼굴 검출기 및 랜드마크 모델 초기화
 detector_hog = dlib.get_frontal_face_detector()
@@ -13,6 +15,11 @@ img_king = cv2.imread(sticker_path, cv2.IMREAD_UNCHANGED)  # 스티커 이미지
 
 # 웹캠 초기화
 cap = cv2.VideoCapture(0)
+
+# 이미지 저장 경로 설정
+output_folder = 'saved_images'
+if not os.path.exists(output_folder):
+    os.makedirs(output_folder)
 
 while True:
     ret, frame = cap.read()
@@ -74,9 +81,17 @@ while True:
     # 결과 출력
     cv2.imshow('Sticker Filter', img_show)
     
-    # 'q' 키를 누르면 종료
-    if cv2.waitKey(1) & 0xFF == ord('q'):
+    # 키 입력 처리
+    key = cv2.waitKey(1) & 0xFF
+    if key == ord('q'):  # 'q' 키를 누르면 종료
         break
+    elif key == ord('s'):  # 's' 키를 누르면 이미지 저장
+        # 현재 시각을 기반으로 파일 이름 생성
+        timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        file_name = f"{timestamp}.png"
+        file_path = os.path.join(output_folder, file_name)
+        cv2.imwrite(file_path, img_show)
+        print(f"Image saved: {file_path}")
 
 # 웹캠 및 창 닫기
 cap.release()
