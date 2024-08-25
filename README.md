@@ -51,6 +51,14 @@ glasses.py
 
 얼굴 랜드마크의 눈쪽에 스티커 이미지 = 안경
 
+hat_webcam.py
+
+웹캠 연결
+
+glasses_webcam.py
+
+웹캠 연결
+
 
 
  
