@@ -14,6 +14,10 @@ img_king = cv2.imread(sticker_path, cv2.IMREAD_UNCHANGED)  # 투명한 부분까
 # 웹캠 초기화
 cap = cv2.VideoCapture(0)
 
+# 스티커 크기 조절 변수
+scale_w = 1.0  # 스티커 가로 크기를 얼굴 너비의 몇 배로 할지 설정
+scale_h = 1.0  # 스티커 세로 크기를 얼굴 높이의 몇 배로 할지 설정
+
 while True:
     # 프레임 읽기
     ret, frame = cap.read()
@@ -38,16 +42,18 @@ while True:
     for dlib_rect, landmark in zip(dlib_rects, list_landmarks):
         # 코 위치 (30번 랜드마크) 기준으로 스티커 위치 계산
         x = landmark[30][0]
-        y = landmark[30][1] - dlib_rect.height() // 2
-        w = h = dlib_rect.width()
+        y = landmark[30][1] - int(dlib_rect.height() * 0.5)  # 코 기준으로 스티커 위로 배치
+        w = int(dlib_rect.width() * scale_w)  # 얼굴 너비에 비례하여 스티커 가로 크기 조정
+        h = int(dlib_rect.height() * scale_h)  # 얼굴 높이에 비례하여 스티커 세로 크기 조정
         
         # 스티커 이미지 리사이즈
         img_king_resized = cv2.resize(img_king, (w, h))
         
         # 스티커 위치 보정
-        refined_x = x - w // 2
-        refined_y = y - h
+        refined_x = x - w // 2  # 스티커를 얼굴 중심에 맞춤
+        refined_y = y - h  # 얼굴 위쪽으로 스티커를 배치
         
+        # 스티커가 화면 밖으로 나가지 않게 조정
         if refined_x < 0:
             img_king_resized = img_king_resized[:, -refined_x:]
             refined_x = 0
@@ -68,9 +74,10 @@ while True:
         king_area = img_show[refined_y:end_y, refined_x:end_x]
 
         # 알파 채널 처리하여 합성
-        alpha_s = img_king_resized[:, :, 3] / 255.0
-        alpha_l = 1.0 - alpha_s
+        alpha_s = img_king_resized[:, :, 3] / 255.0  # 스티커 알파 채널
+        alpha_l = 1.0 - alpha_s  # 배경 알파 채널
 
+        # 알파 블렌딩으로 스티커 합성
         for c in range(0, 3):
             king_area[:, :, c] = (alpha_s * img_king_resized[:, :, c] +
                                   alpha_l * king_area[:, :, c])
