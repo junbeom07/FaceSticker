@@ -1,10 +1,11 @@
 import cv2
 import numpy as np
 import dlib
+from datetime import datetime
 
 # 이미지 경로 지정
 sticker_path = 'aaaa.png'
-img_king = cv2.imread(sticker_path, cv2.IMREAD_UNCHANGED)
+img_gla = cv2.imread(sticker_path, cv2.IMREAD_UNCHANGED)
 
 # 모델 설정
 detector_hog = dlib.get_frontal_face_detector()
@@ -54,36 +55,36 @@ while True:
         h = int(w // 3 * scaling_factor_height)  # 비율에 따라 높이 조정
         
         # 스티커 이미지 리사이즈
-        img_king_resized = cv2.resize(img_king, (w, h))
+        img_gla_resized = cv2.resize(img_gla, (w, h))
         
         # 스티커 위치 보정 (약간 위로 이동)
         refined_x = eye_center_x - w // 2
         refined_y = eye_center_y - h // 2 - int(h * 0.3)  # 위로 30% 정도 이동
 
         # 스티커가 이미지 경계 밖으로 나가지 않도록 조정
-        end_x = min(refined_x + img_king_resized.shape[1], img_show.shape[1])
-        end_y = min(refined_y + img_king_resized.shape[0], img_show.shape[0])
+        end_x = min(refined_x + img_gla_resized.shape[1], img_show.shape[1])
+        end_y = min(refined_y + img_gla_resized.shape[0], img_show.shape[0])
 
         # 영역 조정
         refined_x = max(refined_x, 0)
         refined_y = max(refined_y, 0)
-        img_king_resized = img_king_resized[:end_y-refined_y, :end_x-refined_x]
+        img_gla_resized = img_gla_resized[:end_y-refined_y, :end_x-refined_x]
 
         # 합성할 영역 지정
         king_area = img_show[refined_y:end_y, refined_x:end_x]
 
         # 스티커의 알파 채널(투명도) 처리
-        if img_king_resized.shape[2] == 4:  # 알파 채널이 존재하는 경우
-            alpha_mask = img_king_resized[:, :, 3] / 255.0
+        if img_gla_resized.shape[2] == 4:  # 알파 채널이 존재하는 경우
+            alpha_mask = img_gla_resized[:, :, 3] / 255.0
             for c in range(0, 3):
-                king_area[:, :, c] = (1.0 - alpha_mask) * king_area[:, :, c] + alpha_mask * img_king_resized[:, :, c]
+                king_area[:, :, c] = (1.0 - alpha_mask) * king_area[:, :, c] + alpha_mask * img_gla_resized[:, :, c]
         else:  # 알파 채널이 없는 경우
-            img_show[refined_y:end_y, refined_x:end_x] = np.where(img_king_resized == 0, king_area, img_king_resized).astype(np.uint8)
+            img_show[refined_y:end_y, refined_x:end_x] = np.where(img_gla_resized == 0, king_area, img_gla_resized).astype(np.uint8)
 
     # 결과 출력
     cv2.imshow('Sticker Filter', img_show)
     
-    # 사용자 입력을 통해 스티커 크기 조절 (가로는 'a'와 'd', 세로는 'w'와 's' 키)
+    # 사용자 입력을 통해 스티커 크기 조절 및 캡처 기능
     key = cv2.waitKey(1)
     if key == ord('q'):
         break
@@ -95,6 +96,12 @@ while True:
         scaling_factor_height += 0.1  # 세로 크기 증가
     elif key == ord('s'):
         scaling_factor_height = max(0.1, scaling_factor_height - 0.1)  # 세로 크기 감소
+    elif key == ord('m'):
+        # 현재 프레임 캡처
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        filename = f'captured_frame_{timestamp}.png'
+        cv2.imwrite(filename, img_show)
+        print(f"Frame captured as '{filename}'")
     elif key == ord('f'):
         # 원래 크기로 리셋
         scaling_factor_width = original_scaling_factor_width

@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import dlib
+from datetime import datetime
 
 # 이미지 경로 지정
 sticker_path = 'kkkk.png'  # 파일 이름 영어로 저장해야 함!
@@ -18,6 +19,14 @@ scaling_factor_height = 1.0  # 기본 세로 크기
 # 원래 크기 저장
 original_scaling_factor_width = scaling_factor_width
 original_scaling_factor_height = scaling_factor_height
+
+# 스티커 위치 조정 변수
+sticker_offset_x = 0
+sticker_offset_y = 0
+
+# 원래 위치 저장
+original_sticker_offset_x = sticker_offset_x
+original_sticker_offset_y = sticker_offset_y
 
 # 웹캠 0번으로 설정
 cap = cv2.VideoCapture(0)
@@ -44,8 +53,8 @@ while True:
     # 얼굴마다 스티커 합성
     for dlib_rect, landmark in zip(dlib_rects, list_landmarks):
         # 코 위치 (30번 랜드마크) 기준으로 스티커 위치 계산
-        x = landmark[30][0]
-        y = landmark[30][1] - dlib_rect.height() // 2
+        x = landmark[30][0] + sticker_offset_x
+        y = landmark[30][1] - dlib_rect.height() // 2 + sticker_offset_y
         w = int(dlib_rect.width() * scaling_factor_width)  # 가로 크기 조절
         h = int(dlib_rect.height() * scaling_factor_height)  # 세로 크기 조절
 
@@ -85,10 +94,10 @@ while True:
 
         img_show[refined_y:end_y, refined_x:end_x] = hat_area
 
-    # 결과 프레임 출력, q 누르면 종료
+    # 결과 프레임 출력
     cv2.imshow('Webcam', img_show)
 
-    # 사용자 입력을 통해 스티커 크기 조절 (가로는 'a'와 'd', 세로는 'w'와 's' 키)
+    # 사용자 입력을 통해 스티커 크기 조절 및 위치 조절
     key = cv2.waitKey(1)
     if key == ord('q'):
         break
@@ -100,10 +109,16 @@ while True:
         scaling_factor_height += 0.1  # 세로 크기 증가
     elif key == ord('s'):
         scaling_factor_height = max(0.1, scaling_factor_height - 0.1)  # 세로 크기 감소
-    elif key == ord('f'):
-        # 원래 크기로 리셋
-        scaling_factor_width = original_scaling_factor_width
-        scaling_factor_height = original_scaling_factor_height
+    elif key == ord('g'):
+        # 원래 위치로 리셋
+        sticker_offset_x = original_sticker_offset_x
+        sticker_offset_y = original_sticker_offset_y
+    elif key == ord('m'):
+        # 현재 프레임 캡처
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        filename = f'captured_frame_{timestamp}.png'
+        cv2.imwrite(filename, img_show)
+        print(f"Frame captured as '{filename}'")
 
 cap.release()
 cv2.destroyAllWindows()
