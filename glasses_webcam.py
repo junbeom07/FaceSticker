@@ -14,10 +14,6 @@ img_king = cv2.imread(sticker_path, cv2.IMREAD_UNCHANGED)  # 스티커 이미지
 # 웹캠 초기화
 cap = cv2.VideoCapture(0)
 
-# 스티커 크기 조절 변수 (가로, 세로 비율)
-scale_w = 1.7  # 스티커 가로 크기를 눈 사이 거리의 1.7배로 설정
-aspect_ratio = 3  # 스티커 가로 대비 세로 비율 (가로 크기를 3으로 나눈 값)
-
 while True:
     ret, frame = cap.read()
     if not ret:
@@ -44,9 +40,9 @@ while True:
         eye_center_x = (left_eye_x + right_eye_x) // 2
         eye_center_y = (left_eye_y + right_eye_y) // 2
         
-        # 스티커의 크기 설정 (가로 크기를 조절)
-        w = int((right_eye_x - left_eye_x) * scale_w)  # 가로 크기 설정 (scale_w 변수를 이용)
-        h = w // aspect_ratio  # 가로 대비 세로 비율을 적용하여 높이 설정 (aspect_ratio 변수를 이용)
+        # 스티커의 크기 설정 (가로 크기를 더 늘림)
+        w = int((right_eye_x - left_eye_x) * 1.7)  # 가로 크기 2배
+        h = w // 3  # 비율에 따라 높이 조정
         
         # 스티커 이미지 리사이즈
         img_king_resized = cv2.resize(img_king, (w, h))
