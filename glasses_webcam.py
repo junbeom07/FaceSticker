@@ -2,18 +2,27 @@ import cv2
 import numpy as np
 import dlib
 
-# 얼굴 검출기 및 랜드마크 모델 초기화
+# 이미지 경로 지정
+sticker_path = 'aaaa.png'
+img_king = cv2.imread(sticker_path, cv2.IMREAD_UNCHANGED)
+
+# 모델 설정
 detector_hog = dlib.get_frontal_face_detector()
 model_path = 'shape_predictor_68_face_landmarks.dat'
 landmark_predictor = dlib.shape_predictor(model_path)
 
-# 스티커 이미지 불러오기
-sticker_path = 'aaaa.png'
-img_king = cv2.imread(sticker_path, cv2.IMREAD_UNCHANGED)  # 스티커 이미지의 알파 채널(투명도)도 고려
+# 스티커 크기 조절 변수
+scaling_factor_width = 1.0  # 기본 가로 크기 비율
+scaling_factor_height = 1.0  # 기본 세로 크기 비율
 
-# 웹캠 초기화
+# 원래 크기 저장
+original_scaling_factor_width = scaling_factor_width
+original_scaling_factor_height = scaling_factor_height
+
+# 웹캠 0번으로 설정
 cap = cv2.VideoCapture(0)
 
+# 프레임이 안잡히면 종료
 while True:
     ret, frame = cap.read()
     if not ret:
@@ -40,9 +49,9 @@ while True:
         eye_center_x = (left_eye_x + right_eye_x) // 2
         eye_center_y = (left_eye_y + right_eye_y) // 2
         
-        # 스티커의 크기 설정 (가로 크기를 더 늘림)
-        w = int((right_eye_x - left_eye_x) * 1.7)  # 가로 크기 2배
-        h = w // 3  # 비율에 따라 높이 조정
+        # 스티커의 크기 설정
+        w = int((right_eye_x - left_eye_x) * 1.7 * scaling_factor_width)  # 가로 크기 조절
+        h = int(w // 3 * scaling_factor_height)  # 비율에 따라 높이 조정
         
         # 스티커 이미지 리사이즈
         img_king_resized = cv2.resize(img_king, (w, h))
@@ -74,9 +83,22 @@ while True:
     # 결과 출력
     cv2.imshow('Sticker Filter', img_show)
     
-    # 'q' 키를 누르면 종료
-    if cv2.waitKey(1) & 0xFF == ord('q'):
+    # 사용자 입력을 통해 스티커 크기 조절 (가로는 'a'와 'd', 세로는 'w'와 's' 키)
+    key = cv2.waitKey(1)
+    if key == ord('q'):
         break
+    elif key == ord('a'):
+        scaling_factor_width = max(0.1, scaling_factor_width - 0.1)  # 가로 크기 감소
+    elif key == ord('d'):
+        scaling_factor_width += 0.1  # 가로 크기 증가
+    elif key == ord('w'):
+        scaling_factor_height += 0.1  # 세로 크기 증가
+    elif key == ord('s'):
+        scaling_factor_height = max(0.1, scaling_factor_height - 0.1)  # 세로 크기 감소
+    elif key == ord('f'):
+        # 원래 크기로 리셋
+        scaling_factor_width = original_scaling_factor_width
+        scaling_factor_height = original_scaling_factor_height
 
 # 웹캠 및 창 닫기
 cap.release()
